@@ -1,0 +1,5 @@
+<?php 
+
+function atrium_uvic_custom_enable() {
+  db_query("UPDATE {system} SET weight = 12 WHERE name = 'atrium_uvic_custom' AND type = 'module'");
+}

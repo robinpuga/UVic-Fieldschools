@@ -1,0 +1,78 @@
+<?php
+
+include_once('atrium_blog.features.inc');
+
+function atrium_blog_menu_alter(&$items) {
+    // _p($items);
+  if (context_get('context', 'blog_listing_public')) {
+
+   //  _p($items);
+    // $items['user']['type'] = MENU_CALLBACK;
+    // $items['user/register']['type'] = MENU_CALLBACK;
+    // $items['user/password']['type'] = MENU_CALLBACK;
+  }
+}
+
+/**
+ * Implementation of hook_context_page_reaction().
+ * Good occasion to set the breadcrumb.
+ */
+function atrium_blog_context_page_reaction() {
+
+  if (context_get('context', 'blog_listing_public')) {
+    $breadcrumb = array(
+      l(t('Home'), '<front>', array('purl' => array('disabled' => TRUE))),
+    );
+    $url_array = explode("/", $_SERVER['REQUEST_URI']);
+    if ( count($url_array) >= 1 && $url_array[1] == 'public') {
+      $breadcrumb[] = l(t('Public Blog'), 'public/blog', array('purl' => array('disabled' => TRUE)));
+      if ( $url_array[2] == 'post' && is_numeric($url_array[3]) ) {
+        $breadcrumb[] = l(drupal_get_title(), 'public/post/' . arg(1), array('purl' => array('disabled' => TRUE)));
+      }
+      if ( $url_array[2] == 'blog' && isset($url_array[3]) ) {
+        $author_tmp = user_load(array('name' => $url_array[3]));
+        $breadcrumb[] = l(ucwords($url_array[3]) . '\'s personal blog', 'public/blog/' . $url_array[3], array('purl' => array('disabled' => TRUE)));
+      }
+    }
+    drupal_set_breadcrumb($breadcrumb);
+  }
+}
+
+
+/**
+ * HACXOR TOM's Temporary Debugging Function
+ */
+function _p($var, $label = NULL) {
+  if ($label) {
+    error_log(print_r('DEBUG: '. $label .'=>', 1), 0);
+  }
+  error_log(print_r($var, 1), 0);
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function atrium_blog_help($path) {
+  // Central help page content.
+  if ($path == 'help#atrium_blog') {
+    $help = '<h3>'. t('Blog') .'</h3>';
+    $help .= '<p>'. t("The blog lets your team communicate by posting updates and discussing issues. It is a great place for sharing progress, discussing challenges, and exploring ideas.") .'</p>';
+    $help .= '<p>'. t("To start a conversation navigate to the blog and click the \"Add blog post\" button. You will need to enter a title and some body content to your post. Then click \"Save\".") .'</p>';
+    return $help;
+  }
+
+  // Contextual help content.
+  if (context_isset('context', 'blog_listing')) {
+    if ($path == 'node/add/blog') {
+      $help = '';
+      $help .= '<h3>'. t('Blog') .'</h3>';
+      $help .= '<p>'. t("Post an entry to the blog of this group. The post will be shared will all team members on the blog, and they will be able to reply to it. You can optionally notify other group members by checking their name in the notifications field.") .'</p>';
+      return $help;
+    }
+    else {
+      $help = '<h3>'. t('Blog') .'</h3>';
+      $help .= '<p>'. t("The blog lets your team communicate by posting updates and discussing issues. It is a great place for sharing progress, discussing challenges, and exploring ideas.") .'</p>';
+      return $help;
+    }
+  }
+}

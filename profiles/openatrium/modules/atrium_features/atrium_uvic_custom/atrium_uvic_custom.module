@@ -1,0 +1,112 @@
+<?php
+
+include_once('atrium_uvic_custom.features.inc');
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function atrium_uvic_custom_form_alter(&$form, &$form_state, $form_id) {
+  global $user;
+
+  switch ($form_id) {
+
+    // Manage access to blog posting publicly.
+    case 'blog_node_form':
+      drupal_add_js(drupal_get_path('module', 'atrium_uvic_custom') . '/js/blog_post_form.js');
+      
+      // For authenticated users whose blog post is public, 
+      // hide the ability to change blog states. 
+      if ( !in_array('administrator', $user->roles) 
+           && !in_array('instructor', $user->roles) 
+           && $form['field_blog_public_state']['#default_value'][0]['value'] == 'public_blog_post' 
+           && $user->uid != 1 ) {
+        unset($form['field_blog_public_state']);
+        unset($form['field_discussion_post_type']);
+        $form['title']['#suffix'] = '<h2>' . t('This post is currently set to public display. Contact your group admin to change this permission.') . '</h2>';
+      }
+      drupal_alter('blog_node_form', $form);
+      break;
+  }
+  // _p($form);
+}
+
+// function atrium_uvic_custom_upload_attachments($files) {
+//   _p("here321");
+//   $header = array(t('Attachment'), t('Size'));
+//   $rows = array();
+//   foreach ($files as $file) {
+//     $file = (object)$file;
+//     if ($file->list && empty($file->remove)) {
+//       $href = file_create_url($file->filepath);
+//       $text = $file->description ? $file->description : $file->filename;
+//       _p($text);
+//       _p($href);
+//       $rows[] = array(l($text, $href), format_size($file->filesize));
+//     }
+//   }
+//   if (count($rows)) {
+//     return theme('table', $header, $rows, array('id' => 'attachments'));
+//   }
+// }
+// 
+// /**
+//  * Implementation of hook_theme().
+//  */
+// function atrium_uvic_custom_theme() {
+//    // _p("here333");
+//   return array(
+//     // Using explicit 'function' setting here allows to avoid namespace collisions.
+//     // Was not able to find that method in handbooks. [iva2k]
+// 
+//     'atrium_uvic_custom_attachments' => array(
+//       'arguments' => array('files' => NULL),
+//       'function' => 'atrium_uvic_custom_upload_attachments',
+//     ),
+//   );
+// }
+
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function atrium_uvic_custom_nodeapi(&$node, $op, $teaser, $page) {
+  switch ($op) {
+    case 'alter':
+      break;
+    case 'view':
+      // _p($node);
+      if ($node->type == 'blog') {
+        if (isset($node->field_discussion_post_type[0]['value']) && $node->field_discussion_post_type[0]['value'] != 'blog_post' ) {
+          unset($node->content['field_blog_public_state']);
+        }
+      }
+      
+      break;
+
+    case 'delete':
+      break;
+  }
+}
+
+function atrium_uvic_custom_blog_state_allowed_values() {
+  global $user; 
+  
+  $return_array = array (
+    'not_blog_post' => t('not blog post (not public)'),
+    'internal_blog_post' => t('internal blog posting (not public)'),
+    'submitted_blog_post' => t('submitted for public posting (not public yet)'),
+    'public_blog_post' => t('public blog posting (public)'),
+    'returned_blog_post' => t('returned for edits (not public)'),
+  );
+  
+  // If user is not admin then set the blog state allowed values 
+  if ( !in_array('administrator', $user->roles) 
+       && !in_array('instructor', $user->roles) 
+       && $user->uid != 1 ) {
+    unset($return_array['public_blog_post']); 
+    unset($return_array['returned_blog_post']); 
+  }
+  
+  return $return_array;
+
+}
