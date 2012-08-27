@@ -125,10 +125,16 @@ a {
   -ms-transition: text-shadow 0.5s ease;
 }
 
+a:hover {
+  text-decoration: underline;
+  text-shadow: #0090ff 0px 0px 2px;
+}
+
 #main_content a:hover {
   color: #0069ba;
   text-shadow: #0090ff 0px 0px 2px;
 }
+
 
 footer a:hover {
   color: #43adff;
@@ -258,7 +264,7 @@ form {
 }
 
 img {
-  width: 100%;
+  /* width: 100%; */
   max-width: 100%;
 }
 
@@ -320,6 +326,15 @@ Full-Width Styles
   background: none;
   text-shadow: #111 0px 0px 10px;
 }
+
+.project_intro {
+  color: #fff;
+  font-size: 24px;
+  font-weight: 300;
+  background: none;
+  text-shadow: #111 0px 0px 10px;
+}
+
 
 #downloads {
   position: absolute;
